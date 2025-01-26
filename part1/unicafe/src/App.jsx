@@ -1,14 +1,36 @@
 import { useState } from 'react'
 
+const Heading = ({ text }) => <h1>{text}</h1>
+
+const Button = (props) => {
+  const [text, value, setValue] = props.option
+  return (
+    <button onClick={()=>setValue(value+1)}>{text}</button>
+  )
+}
+
+const Stat = (props) => {
+  const [text, value, setValue] = props.option
+  return (
+    <div>{text} {value}</div>
+  )
+}
+
 const App = () => {
-  // save clicks of each button to its own state
-  const [good, setGood] = useState(0)
-  const [neutral, setNeutral] = useState(0)
-  const [bad, setBad] = useState(0)
+  const good = ["good"].concat(useState(0))
+  const neutral = ["neutral"].concat(useState(0))
+  const bad = ["bad"].concat(useState(0))
 
   return (
     <div>
-      code here
+      <Heading text="give feedback" />
+      <Button option={good}/>
+      <Button option={neutral}/>
+      <Button option={bad}/>
+      <Heading text="statistics" />
+      <Stat option={good}/>
+      <Stat option={neutral}/>
+      <Stat option={bad}/>
     </div>
   )
 }
