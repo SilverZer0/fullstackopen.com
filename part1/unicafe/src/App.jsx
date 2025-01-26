@@ -1,36 +1,59 @@
 import { useState } from 'react'
 
+const Feedback = ({ options }) => {
+  return (
+    <div>
+      <Heading text="give feedback" />
+      {options.map(([text, value, setValue]) =>
+        <Button text={text} onClick={() => setValue(value + 1)} />
+      )}
+    </div>
+  )
+}
+
+const Statistics = ({ options }) => {
+  const all = options.reduce((a, b) => a + b[1], 0)
+  if (all === 0) {
+    return (
+      <div>
+        <Heading text="statistics" />
+        <p>No feedback given</p>
+      </div>
+    )
+  }
+  const avg = (options[0][1] - options[2][1]) / all
+  const pos = options[0][1] / all * 100
+
+  return (
+    <div>
+      <Heading text="statistics" />
+      {options.map(([text, value, setValue]) =>
+        <Stat text={text} value={value} />
+      )}
+      <Stat text="all" value={all} />
+      <Stat text="average" value={avg} />
+      <Stat text="positive" value={pos + " %"} />
+    </div>
+  )
+}
+
 const Heading = ({ text }) => <h1>{text}</h1>
 
-const Button = (props) => {
-  const [text, value, setValue] = props.option
-  return (
-    <button onClick={()=>setValue(value+1)}>{text}</button>
-  )
-}
+const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>
 
-const Stat = (props) => {
-  const [text, value, setValue] = props.option
-  return (
-    <div>{text} {value}</div>
-  )
-}
+const Stat = ({ text, value }) => <div>{text} {value}</div>
 
 const App = () => {
   const good = ["good"].concat(useState(0))
   const neutral = ["neutral"].concat(useState(0))
   const bad = ["bad"].concat(useState(0))
 
+  const options = [good, neutral, bad]
+
   return (
     <div>
-      <Heading text="give feedback" />
-      <Button option={good}/>
-      <Button option={neutral}/>
-      <Button option={bad}/>
-      <Heading text="statistics" />
-      <Stat option={good}/>
-      <Stat option={neutral}/>
-      <Stat option={bad}/>
+      <Feedback options={options} />
+      <Statistics options={options} />
     </div>
   )
 }
