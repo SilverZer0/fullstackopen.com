@@ -2,12 +2,7 @@ import { useState } from 'react'
 
 const Heading = ({ text }) => <h1>{text}</h1>
 
-const Anecdote = ({ text, votes }) => (
-  <>
-    <div>{text}</div>
-    <div>has {votes} votes</div>
-  </>
-)
+const Anecdote = ({ text, votes }) => <div>{text}<br />has {votes} votes</div>
 
 const App = () => {
   const anecdotes = [
@@ -23,8 +18,9 @@ const App = () => {
 
   const [selected, setSelected] = useState(0)
   const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0))
+
   //https://stackoverflow.com/questions/11301438/#answer-30850912
-  const maxIndex = votes.reduce((maxI, x, i, arr)=>x > arr[maxI] ? i : maxI, 0)
+  const maxIndex = votes.reduce((maxI, x, i, arr) => x > arr[maxI] ? i : maxI, 0)
 
   const chooseRandom = () => {
     setSelected(Math.floor(Math.random() * anecdotes.length))
