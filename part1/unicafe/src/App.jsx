@@ -28,11 +28,11 @@ const Statistics = ({ options }) => {
     <div>
       <Heading text="statistics" />
       {options.map(([text, value, setValue]) =>
-        <Stat text={text} value={value} />
+        <StatisticLine text={text} value={value} />
       )}
-      <Stat text="all" value={all} />
-      <Stat text="average" value={avg} />
-      <Stat text="positive" value={pos + " %"} />
+      <StatisticLine text="all" value={all} />
+      <StatisticLine text="average" value={avg} />
+      <StatisticLine text="positive" value={pos + " %"} />
     </div>
   )
 }
@@ -41,7 +41,7 @@ const Heading = ({ text }) => <h1>{text}</h1>
 
 const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>
 
-const Stat = ({ text, value }) => <div>{text} {value}</div>
+const StatisticLine = ({ text, value }) => <div>{text} {value}</div>
 
 const App = () => {
   const good = ["good"].concat(useState(0))
