@@ -5,7 +5,7 @@ const Feedback = ({ options }) => {
     <div>
       <Heading text="give feedback" />
       {options.map(([text, value, setValue]) =>
-        <Button text={text} onClick={() => setValue(value + 1)} />
+        <Button key={text} text={text} onClick={() => setValue(value + 1)} />
       )}
     </div>
   )
@@ -21,6 +21,7 @@ const Statistics = ({ options }) => {
       </div>
     )
   }
+  
   const avg = (options[0][1] - options[2][1]) / all
   const pos = options[0][1] / all * 100
 
@@ -30,13 +31,12 @@ const Statistics = ({ options }) => {
       <table>
         <tbody>
           {options.map(([text, value, setValue]) =>
-            <StatisticLine text={text} value={value} />
+            <StatisticLine key={text} text={text} value={value} />
           )}
           <StatisticLine text="all" value={all} />
           <StatisticLine text="average" value={avg} />
           <StatisticLine text="positive" value={pos + " %"} />
         </tbody>
-
       </table>
     </div>
   )
@@ -49,9 +49,9 @@ const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>
 const StatisticLine = ({ text, value }) => <tr><td>{text}</td><td>{value}</td></tr>
 
 const App = () => {
-  const good = ["good"].concat(useState(0))
-  const neutral = ["neutral"].concat(useState(0))
-  const bad = ["bad"].concat(useState(0))
+  const good = ["good", ...useState(0)];
+  const neutral = ["neutral", ...useState(0)];
+  const bad = ["bad", ...useState(0)];
 
   const options = [good, neutral, bad]
 
