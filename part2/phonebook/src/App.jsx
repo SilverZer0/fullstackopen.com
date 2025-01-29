@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 
+import dbService from './services/db'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
@@ -12,28 +12,46 @@ const App = () => {
   const [filterName, setFilterName] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+    dbService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   }, [])
 
   const addPerson = (event) => {
-    event.preventDefault()    
-    if(persons.some((p)=>p.name===newName)){
+    event.preventDefault()
+    if (persons.some((p) => p.name === newName)) {
       alert(`${newName} is already added to phonebook`)
       return
     }
     const personObject = {
       name: newName,
-      number: newNumber,
-      id: persons.length +1
+      number: newNumber
     }
-  
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+
+    dbService
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
+  }
+
+  const removePerson = (id, name) => {
+    if (!confirm(`Delete ${name}?`)) return
+    
+    // this needs to be done either way (remove or desync)
+    setPersons(persons.filter(person => person.id !== id))
+
+    dbService
+      .remove(id)
+      .catch(error => {
+        alert(
+          `${name} was already deleted from server`
+        )
+      })
   }
 
   const handleNewNameChange = (event) => {
@@ -47,23 +65,23 @@ const App = () => {
   }
 
   const shownPersons = persons.filter(
-    (person)=>person.name.toLowerCase().includes(filterName)
+    (person) => person.name.toLowerCase().includes(filterName)
   )
 
   return (
     <div>
       <h2>Phonebook</h2>
-      <Filter value={filterName} onChangeHandler={handleFilterNameChange}/>
+      <Filter value={filterName} onChange={handleFilterNameChange} />
       <h2>add a new</h2>
-      <PersonForm 
-        onSubmitHandler={addPerson}
+      <PersonForm
+        onSubmit={addPerson}
         name={newName}
-        nameHandler={handleNewNameChange}
+        onNameChange={handleNewNameChange}
         number={newNumber}
-        numberHandler={handleNewNumberChange}
+        onNumberChange={handleNewNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={shownPersons}/>
+      <Persons persons={shownPersons} removeHandler={removePerson} />
     </div>
   )
 }
