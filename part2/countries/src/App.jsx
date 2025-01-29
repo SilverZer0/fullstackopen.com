@@ -10,43 +10,51 @@ const App = () => {
   const [filter, setFilter] = useState('')
   const [countries, setCountries] = useState([])
   const [country, setCountry] = useState(null)
+  const [bitmask, setBitMask] = useState([])
 
   useEffect(() => {
     countryService
       .getAll()
       .then(
-        initialCountries => setCountries(initialCountries)
+        fetchedCountries => {
+          setCountries(fetchedCountries)
+          setBitMask(new Array(fetchedCountries.length).fill(1))
+        }
       )
   }, [])
 
   const handleFilterChange = (event) => {
-    setFilter(event.target.value.toLowerCase())
+    const value = event.target.value.toLowerCase()
+    const newBitmask = countries.map(
+      (country) => country.name.common.toLowerCase().includes(value)
+    )
+    console.log(newBitmask)
+    const newCount = newBitmask.reduce((a, b) => a + b, 0)
+    setFilter(value)
+    setBitMask(newBitmask)
+    if (newCount === 1) {
+      getCountry(countries[newBitmask.findIndex(bit => bit)].name.common)
+    } else {
+      setCountry(null)
+    }
   }
 
-  const matchingCountries = countries.filter(
-    (country) => country.name.common.toLowerCase().includes(filter)
-  )
-
-  if (matchingCountries.length === 1) {
-    if (country === null
-      || country.name.common !== matchingCountries[0].name.common) {
-      //setCountry({ name: { common: "loading" } })
-      countryService
-        .getCountry(matchingCountries[0].name.common)
-        .then(data => setCountry(data))
-    }
-  } else if (country !== null) {
-    setCountry(null)
+  const getCountry = (countryName) => {
+    countryService
+      .getCountry(countryName)
+      .then(data => setCountry(data))
   }
 
   return (
     <div>
       <Filter value={filter} onChange={handleFilterChange} />
-      <CountryList countries={matchingCountries} />
       {
-        country !== null
-          ? <Country country={country} />
-          : <></>
+        country === null
+          ? <CountryList
+            countries={countries.filter((_, index) => bitmask[index])}
+            getCountry={getCountry}
+          />
+          : <Country country={country} />
       }
     </div>
   )
