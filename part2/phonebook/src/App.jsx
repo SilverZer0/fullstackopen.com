@@ -21,36 +21,44 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    if (persons.some((p) => p.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
-      return
-    }
-    const personObject = {
-      name: newName,
-      number: newNumber
-    }
 
-    dbService
-      .create(personObject)
-      .then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson))
-        setNewName('')
-        setNewNumber('')
-      })
+    const existingPerson = persons.find((p) => p.name === newName)
+    if (existingPerson) {// update number
+      if (!confirm(`Replace existing number of ${existingPerson.name}?`)) return
+      dbService
+        .update(existingPerson.id, {...existingPerson, number:newNumber})
+        .then(returnedPerson => {
+          setPersons(persons.map(p => p.id !== returnedPerson.id ? p : returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        }).catch(error => {
+          alert(`${existingPerson.name} was deleted from server`)
+        })
+    } else {
+      const personObject = {
+        name: newName,
+        number: newNumber
+      }
+      dbService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+    }
   }
 
   const removePerson = (id, name) => {
     if (!confirm(`Delete ${name}?`)) return
-    
+
     // this needs to be done either way (remove or desync)
     setPersons(persons.filter(person => person.id !== id))
 
     dbService
       .remove(id)
       .catch(error => {
-        alert(
-          `${name} was already deleted from server`
-        )
+        alert(`${name} was already deleted from server`)
       })
   }
 
