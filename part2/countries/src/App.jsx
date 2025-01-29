@@ -42,7 +42,14 @@ const App = () => {
   const getCountry = (countryName) => {
     countryService
       .getCountry(countryName)
-      .then(data => setCountry(data))
+      .then(countryData => {
+        countryService
+          .getWeather(countryData.capital, countryData.cca3)
+          .then(weatherData => {
+            setCountry({ ...countryData, weather: weatherData })
+          }
+          )
+      })
   }
 
   return (
