@@ -10,7 +10,7 @@ const Content = ({ parts }) => (
 
 const Part = ({ part }) => <p>{part.name} {part.exercises}</p>
 
-const Total = ({ total }) => <p>Number of exercises {total}</p>
+const Total = ({ total }) => <p><b>total of {total} exercises</b></p>
 
 const Course = ({ course }) => (
   <div>
@@ -39,6 +39,11 @@ const App = () => {
         name: 'State of a component',
         exercises: 14,
         id: 3
+      },
+      {
+        name: 'Redux',
+        exercises: 11,
+        id: 4
       }
     ]
   }
