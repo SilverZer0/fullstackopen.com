@@ -1,0 +1,16 @@
+### list all
+GET http://localhost:3001/api/persons HTTP/1.1
+### info
+GET http://localhost:3001/info HTTP/1.1
+### get one
+get http://localhost:3001/api/persons/1 HTTP/1.1
+### delete one
+DELETE http://localhost:3001/api/persons/1 HTTP/1.1
+### add one
+POST http://localhost:3001/api/persons/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Test Testing",
+    "number": "12345-67890"
+}
