@@ -14,3 +14,21 @@ content-type: application/json
     "name": "Test Testing",
     "number": "12345-67890"
 }
+
+### remote
+### list all
+GET https://phonebook-wandering-glade-9372.fly.dev/api/persons HTTP/1.1
+### info
+GET https://phonebook-wandering-glade-9372.fly.dev/info HTTP/1.1
+### get one
+GET https://phonebook-wandering-glade-9372.fly.dev/api/persons/1 HTTP/1.1
+### delete one
+DELETE https://phonebook-wandering-glade-9372.fly.dev/api/persons/1 HTTP/1.1
+### add one
+POST https://phonebook-wandering-glade-9372.fly.dev/api/persons/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Test Testing",
+    "number": "12345-67890"
+}
