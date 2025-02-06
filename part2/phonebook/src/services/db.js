@@ -13,7 +13,7 @@ const responseHandler = (request, messages) => {
       return response.data
     })
     .catch(error => {
-      notify(messages.error, true)
+      notify(messages.error || error.response.data.error, true)
       return null
     })
 }
@@ -30,7 +30,6 @@ const create = newObject => {
   const request = axios.post(baseUrl, newObject)
   return responseHandler(request, {
     success: `Added ${newObject.name}`,
-    error: `Failed to add ${newObject.name}`
   })
 }
 
@@ -46,7 +45,6 @@ const update = (id, newObject) => {
   const request = axios.put(`${baseUrl}/${id}`, newObject)
   return responseHandler(request, {
     success: `Replaced number of ${newObject.name}`,
-    error: `${newObject.name} was already deleted from server`
   })
 }
 
