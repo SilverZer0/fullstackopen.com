@@ -39,9 +39,9 @@ const App = () => {
       dbService
         .update(existingPerson.id, { ...existingPerson, number: newNumber })
         .then(returnedPerson => {
-          if (returnedPerson !== null) {
+          if (returnedPerson) {
             setPersons(persons.map(p => p.id !== returnedPerson.id ? p : returnedPerson))
-          } else {
+          } else if (returnedPerson !== false) {
             setPersons(persons.filter(person => person.id !== existingPerson.id))
           }
         })
@@ -53,7 +53,7 @@ const App = () => {
       dbService
         .create(personObject)
         .then(returnedPerson => {
-          if (returnedPerson !== null) { setPersons(persons.concat(returnedPerson)) }
+          if (returnedPerson) { setPersons(persons.concat(returnedPerson)) }
         })
     }
     setNewName('')
