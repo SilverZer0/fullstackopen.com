@@ -1,0 +1,18 @@
+### list all
+GET http://localhost:3003/api/blogs HTTP/1.1
+### info
+GET http://localhost:3003/info HTTP/1.1
+### get one
+GET http://localhost:3003/api/blogs/67a38d7938e1483e88b24ff0 HTTP/1.1
+### delete one
+DELETE http://localhost:3003/api/blogs/67a38d7938e1483e88b24ff0 HTTP/1.1
+### add one
+POST http://localhost:3003/api/blogs/ HTTP/1.1
+content-type: application/json
+
+{
+    "title": "TITLE - 2",
+    "author": "AUTHOR - 2",
+    "url": "URL/2",
+    "likes": 84
+}
