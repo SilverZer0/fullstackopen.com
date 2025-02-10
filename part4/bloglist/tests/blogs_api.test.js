@@ -33,15 +33,13 @@ describe('test API', () => {
         .expect('Content-Type', /application\/json/)
     })
 
-    test('there are six blogs', async () => {
+    test('the number of returned blogs is correct', async () => {
       const response = await api.get('/api/blogs')
-
       assert.strictEqual(response.body.length, helper.initialBlogs.length)
     })
 
-    test('one blog is about React patterns', async () => {
+    test('a specific blog is one of the returned blogs', async () => {
       const response = await api.get('/api/blogs')
-
       const contents = response.body.map(e => e.title)
       assert(contents.includes('React patterns'))
     })
@@ -113,6 +111,78 @@ describe('test API', () => {
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
+  })
+
+  describe('GET /api/blogs/:id', () => {
+    test('a valid id returns a blog', async () => {
+      const blogs = await helper.blogsInDb()
+      const response = await api
+        .get(`/api/blogs/${blogs[0].id}`)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+      assert.deepStrictEqual(response.body, blogs[0])
+    })
+
+    test('an invalid id can\'t return a blog', async () => {
+      await api
+        .get(`/api/blogs/${helper.nonExistingId}`)
+        .expect(400)
+    })
+  })
+
+  describe('DELETE /api/blogs/:id', () => {
+    test('a valid id can delete a blog', async () => {
+      const blogs = await helper.blogsInDb()
+      await api
+        .delete(`/api/blogs/${blogs[0].id}`)
+        .expect(204)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+    })
+
+    test('an invalid id can\'t delete a blog', async () => {
+      await api
+        .delete(`/api/blogs/${helper.nonExistingId}`)
+        .expect(400)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+  })
+
+  describe('PUT /api/blogs/:id', () => {
+    test('a valid id and data can update a blog', async () => {
+      const blogs = await helper.blogsInDb()
+      const updatedBlog = { ...blogs[0], likes: 42 }
+      const response = await api
+        .put(`/api/blogs/${updatedBlog.id}`)
+        .send(updatedBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+      assert.deepStrictEqual(response.body, updatedBlog)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('an invalid id can\'t update a blog', async () => {
+      const updatedBlog = { ...helper.initialBlogs[0], id: helper.nonExistingId }
+      await api
+        .put(`/api/blogs/${updatedBlog.id}`)
+        .send(updatedBlog)
+        .expect(400)
+    })
+
+    /* This test fails because the PUT method is implemented as a PATCH method as everywhere else in the course
+    test('a valid id but invalid data can\'t update a blog', async () => {
+      const blogs = await helper.blogsInDb()
+      const updatedBlog = { ...blogs[0] }
+      delete updatedBlog.url
+      console.log('req', updatedBlog)
+      await api
+        .put(`/api/blogs/${updatedBlog.id}`)
+        .send(updatedBlog)
+        .expect(400)
+    })
+    */
   })
 })
 
