@@ -1,22 +1,26 @@
-const { test, after, describe, beforeEach } = require('node:test')
+const { test, after, describe, beforeEach, before } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const helper = require('./test_helper')
 const app = require('../app')
-const Blog = require('../models/blog')
 
 const api = supertest(app)
 
-beforeEach(async () => {
-  await Blog.deleteMany({})
+describe('test blogs API', () => {
+  let validTokens = []
 
-  const blogObjects = helper.initialBlogs.map(blog => new Blog(blog))
-  const promiseArray = blogObjects.map(blog => blog.save())
-  await Promise.all(promiseArray)
-})
+  before(async () => {
+    for (const { username, password } of helper.initialUsers) {
+      const response = await api
+        .post('/api/login')
+        .send({ username, password })
+      validTokens.push(response.body.token)
+    }
 
-describe('test API', () => {
+  })
+  beforeEach(helper.resetDb)
+
   test('the unique identifier is renamed to id', async () => {
     const blogs = await helper.blogsInDb()
     for (const blog of blogs) {
@@ -56,6 +60,7 @@ describe('test API', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${validTokens[0]}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -64,7 +69,7 @@ describe('test API', () => {
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
 
       const contents = blogsAtEnd.map(n => n.title)
-      assert(contents.includes('A cool new Blog'))
+      assert(contents.includes(newBlog.title))
     })
 
     test('a blog without the likes property defaults to zero likes', async () => {
@@ -76,6 +81,7 @@ describe('test API', () => {
 
       const response = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${validTokens[0]}`)
         .send(newBlog)
         .expect(201)
 
@@ -90,6 +96,7 @@ describe('test API', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${validTokens[0]}`)
         .send(newBlog)
         .expect(400)
 
@@ -105,8 +112,44 @@ describe('test API', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${validTokens[0]}`)
         .send(newBlog)
         .expect(400)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('a valid blog does not get added if the token is missing', async () => {
+      const newBlog = {
+        title: 'A cool new Blog',
+        author: 'Anonymous',
+        url: 'https://not-a-real-domain.com/not-an-actual-url',
+        likes: 7
+      }
+
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('a valid blog does not get added if the token is invalid', async () => {
+      const newBlog = {
+        title: 'A cool new Blog',
+        author: 'Anonymous',
+        url: 'https://not-a-real-domain.com/not-an-actual-url',
+        likes: 7
+      }
+
+      await api
+        .post('/api/blogs')
+        .set('Authorization', 'Bearer not.a.valid.token')
+        .send(newBlog)
+        .expect(401)
 
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
@@ -126,15 +169,16 @@ describe('test API', () => {
     test('an invalid id can\'t return a blog', async () => {
       await api
         .get(`/api/blogs/${helper.nonExistingId}`)
-        .expect(400)
+        .expect(404)
     })
   })
 
   describe('DELETE /api/blogs/:id', () => {
     test('a valid id can delete a blog', async () => {
-      const blogs = await helper.blogsInDb()
+      const correctToken = validTokens[3]
       await api
-        .delete(`/api/blogs/${blogs[0].id}`)
+        .delete(`/api/blogs/${helper.initialBlogs[0].id}`)
+        .set('Authorization', `Bearer ${correctToken}`)
         .expect(204)
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
@@ -143,7 +187,35 @@ describe('test API', () => {
     test('an invalid id can\'t delete a blog', async () => {
       await api
         .delete(`/api/blogs/${helper.nonExistingId}`)
-        .expect(400)
+        .set('Authorization', `Bearer ${validTokens[0]}`)
+        .expect(404)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('a valid id but wrong token can\'t delete a blog', async () => {
+      const incorrectToken = validTokens[0] // 3 is correct for blogs[0]
+      await api
+        .delete(`/api/blogs/${helper.initialBlogs[0].id}`)
+        .set('Authorization', `Bearer ${incorrectToken}`)
+        .expect(401)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('a valid id but invalid token can\'t delete a blog', async () => {
+      await api
+        .delete(`/api/blogs/${helper.initialBlogs[0].id}`)
+        .set('Authorization', 'Basic not.a.valid.token')
+        .expect(401)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('a valid id but no token can\'t delete a blog', async () => {
+      await api
+        .delete(`/api/blogs/${helper.initialBlogs[0].id}`)
+        .expect(401)
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
@@ -151,10 +223,11 @@ describe('test API', () => {
 
   describe('PUT /api/blogs/:id', () => {
     test('a valid id and data can update a blog', async () => {
-      const blogs = await helper.blogsInDb()
-      const updatedBlog = { ...blogs[0], likes: 42 }
+      const updatedBlog = { ...helper.initialBlogs[0], likes: 42 }
+      const correctToken = validTokens[3]
       const response = await api
         .put(`/api/blogs/${updatedBlog.id}`)
+        .set('Authorization', `Bearer ${correctToken}`)
         .send(updatedBlog)
         .expect(200)
         .expect('Content-Type', /application\/json/)
@@ -167,8 +240,36 @@ describe('test API', () => {
       const updatedBlog = { ...helper.initialBlogs[0], id: helper.nonExistingId }
       await api
         .put(`/api/blogs/${updatedBlog.id}`)
+        .set('Authorization', `Bearer ${validTokens[0]}`)
         .send(updatedBlog)
-        .expect(400)
+        .expect(404)
+    })
+
+    test('a valid id but wrong token can\'t update a blog', async () => {
+      const incorrectToken = validTokens[0] // 3 is correct for blogs[0]
+      const updatedBlog = { ...helper.initialBlogs[0], likes: 42 }
+      await api
+        .put(`/api/blogs/${updatedBlog.id}`)
+        .set('Authorization', `Bearer ${incorrectToken}`)
+        .send(updatedBlog)
+        .expect(401)
+    })
+
+    test('a valid id but invalid token can\'t update a blog', async () => {
+      const updatedBlog = { ...helper.initialBlogs[0], likes: 42 }
+      await api
+        .put(`/api/blogs/${updatedBlog.id}`)
+        .set('Authorization', 'Basic not.a.valid.token')
+        .send(updatedBlog)
+        .expect(401)
+    })
+
+    test('a valid id but no token can\'t update a blog', async () => {
+      const updatedBlog = { ...helper.initialBlogs[0], likes: 42 }
+      await api
+        .put(`/api/blogs/${updatedBlog.id}`)
+        .send(updatedBlog)
+        .expect(401)
     })
 
     /* This test fails because the PUT method is implemented as a PATCH method as everywhere else in the course
@@ -176,16 +277,17 @@ describe('test API', () => {
       const blogs = await helper.blogsInDb()
       const updatedBlog = { ...blogs[0] }
       delete updatedBlog.url
-      console.log('req', updatedBlog)
       await api
         .put(`/api/blogs/${updatedBlog.id}`)
+        .set('Authorization', `Bearer ${validTokens[0]}`)
         .send(updatedBlog)
         .expect(400)
     })
     */
   })
-})
 
-after(async () => {
-  await mongoose.connection.close()
+
+  after(async () => {
+    await mongoose.connection.close()
+  })
 })

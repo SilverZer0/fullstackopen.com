@@ -1,0 +1,20 @@
+### list all
+GET http://localhost:3003/api/users HTTP/1.1
+### add user
+POST http://localhost:3003/api/users/ HTTP/1.1
+content-type: application/json
+
+{
+    "username": "DDD",
+    "name": "DDD",
+    "password": "DDD"
+}
+
+### login
+POST http://localhost:3003/api/login/ HTTP/1.1
+content-type: application/json
+
+{
+    "username": "BBB",
+    "password": "BBB"
+}

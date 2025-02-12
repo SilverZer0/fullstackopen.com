@@ -1,0 +1,27 @@
+### list all
+GET http://localhost:3003/api/blogs HTTP/1.1
+### get one
+GET http://localhost:3003/api/blogs/67a7463aea14a48c2209eb92 HTTP/1.1
+### delete one
+DELETE http://localhost:3003/api/blogs/67ab7cbc2a07585c680d05b3 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkJCQiIsImlkIjoiNjdhYjc2YWY1ZjY0MWY3ZWJmODM0MGVhIiwiaWF0IjoxNzM5MjkwMzMyLCJleHAiOjE3MzkyOTM5MzJ9.xuaxBjGMPs1R8EQPOF3bHGr7sfWsDsMG70s5bvk90cc
+### add one
+POST http://localhost:3003/api/blogs/ HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkJCQiIsImlkIjoiNjdhYjc2YWY1ZjY0MWY3ZWJmODM0MGVhIiwiaWF0IjoxNzM5MjkwMzMyLCJleHAiOjE3MzkyOTM5MzJ9.xuaxBjGMPs1R8EQPOF3bHGr7sfWsDsMG70s5bvk90cc
+
+{
+    "title": "TITLE - B2",
+    "author": "AUTHOR - B2",
+    "url": "URL/B2"
+}
+### update
+PUT  http://localhost:3003/api/blogs/??? HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY3YWI3MTdjZTcxYmRmMjY1OTRiYjI4ZiIsImlhdCI6MTczOTI4ODk2MywiZXhwIjoxNzM5MjkyNTYzfQ.x3Gy-ghGZ36YlCt-rEAHUilR5uRICPhxqeNlKi0DvVc
+
+{
+    "title": "TITLE - 3",
+    "author": "AUTHOR - 3",
+    "url": "URL/3"
+}

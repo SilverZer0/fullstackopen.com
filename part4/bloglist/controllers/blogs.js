@@ -1,12 +1,21 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const { userExtractor, verifyPoster } = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
   response.json(await Blog.find({}))
 })
 
-blogsRouter.post('/', async (request, response) => {
-  const savedBlog = await new Blog(request.body).save()
+blogsRouter.post('/', userExtractor, async (request, response) => {
+  const user = request.user
+  const blog = new Blog({
+    ...request.body,
+    user: user.id
+  })
+
+  const savedBlog = await blog.save()
+  user.blogs = user.blogs.concat(savedBlog._id)
+  await user.save()
   response.status(201).json(savedBlog)
 })
 
@@ -19,12 +28,12 @@ blogsRouter.get('/:id', async (request, response) => {
   }
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', userExtractor, verifyPoster, async (request, response) => {
   await Blog.findByIdAndDelete(request.params.id)
   response.status(204).end()
 })
 
-blogsRouter.put('/:id', async (request, response) => {
+blogsRouter.put('/:id', userExtractor, verifyPoster, async (request, response) => {
   const updatedBlog = await Blog.findByIdAndUpdate(
     request.params.id,
     request.body,
