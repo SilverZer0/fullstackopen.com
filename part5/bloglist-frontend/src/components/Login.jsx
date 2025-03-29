@@ -1,18 +1,20 @@
+import PropTypes from 'prop-types'
 import { useState } from 'react'
 
-const Login = ({ makeLoginHandler }) => {
+const Login = ({ login }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  const resetInputs = () => {
-    setUsername('')
-    setPassword('')
+  const loginHandler = async (event) => {
+    event.preventDefault()
+    if (await login(username, password)) {
+      setUsername('')
+      setPassword('')
+    }
   }
 
-  const loginHandler = makeLoginHandler(username, password, resetInputs)
-
   return (
-    <form onSubmit={loginHandler}>
+    <form onSubmit={loginHandler} className='loginForm'>
       <div>
         username:
         <input
@@ -30,6 +32,10 @@ const Login = ({ makeLoginHandler }) => {
       <button type="submit">login</button>
     </form>
   )
+}
+
+Login.propTypes = {
+  login: PropTypes.func.isRequired
 }
 
 export default Login

@@ -10,13 +10,19 @@ const setToken = newToken => {
 }
 
 const getAll = async () => {
-  const response = await axios.get(baseUrl)
-  return response.data
+  return (await axios.get(baseUrl)).data
 }
 
 const create = async newObject => {
-  const response = await axios.post(baseUrl, newObject, config)
-  return response.data
+  return (await axios.post(baseUrl, newObject, config)).data
 }
 
-export default { getAll, create, setToken }
+const update = async (id, newObject) => {
+  return (await axios.put(`${baseUrl}/${id}`, newObject, config)).data
+}
+
+const remove = async id => {
+  return (await axios.delete(`${baseUrl}/${id}`, config)).data
+}
+
+export default { getAll, create, update, remove, setToken }

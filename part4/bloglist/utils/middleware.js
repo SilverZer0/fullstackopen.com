@@ -70,10 +70,15 @@ const verifyPoster = async (request, response, next) => {
       error: 'blog not found'
     })
   }
+
+  request.userIsPoster = true
   if (blog.user.toString() !== user.id.toString()) {
-    return response.status(401).json({
-      error: 'blog was not posted by this user'
-    })
+    if (request.method !== 'PUT') {
+      return response.status(401).json({
+        error: 'blog was not posted by this user'
+      })
+    }
+    request.userIsPoster = false
   }
 
   next()

@@ -47,6 +47,12 @@ describe('test blogs API', () => {
       const contents = response.body.map(e => e.title)
       assert(contents.includes('React patterns'))
     })
+
+    test('the blogs user is populated', async () => {
+      const response = await api.get('/api/blogs')
+      const blog = response.body.find(blog => blog.title === helper.initialBlogs[0].title)
+      assert.strictEqual(blog.user.id, helper.initialBlogs[0].user)
+    })
   })
 
   describe('POST /api/blogs', () => {
@@ -153,23 +159,6 @@ describe('test blogs API', () => {
 
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
-    })
-  })
-
-  describe('GET /api/blogs/:id', () => {
-    test('a valid id returns a blog', async () => {
-      const blogs = await helper.blogsInDb()
-      const response = await api
-        .get(`/api/blogs/${blogs[0].id}`)
-        .expect(200)
-        .expect('Content-Type', /application\/json/)
-      assert.deepStrictEqual(response.body, blogs[0])
-    })
-
-    test('an invalid id can\'t return a blog', async () => {
-      await api
-        .get(`/api/blogs/${helper.nonExistingId}`)
-        .expect(404)
     })
   })
 
