@@ -13,8 +13,8 @@ const Notification = ({ notification: { message, isError } }) => {
 
 Notification.propTypes = {
   notification: PropTypes.shape({
-    message: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]).isRequired,
-    isError: PropTypes.bool.isRequired
+    message: PropTypes.string,
+    isError: PropTypes.bool
   }).isRequired
 }
 
